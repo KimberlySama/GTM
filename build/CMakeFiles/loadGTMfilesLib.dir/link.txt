@@ -1,0 +1,2 @@
+/usr/bin/ar qc libloadGTMfilesLib.a  CMakeFiles/loadGTMfilesLib.dir/src/argvparser.cpp.o CMakeFiles/loadGTMfilesLib.dir/src/loadGTMfiles.cpp.o
+/usr/bin/ranlib libloadGTMfilesLib.a
