@@ -16,21 +16,26 @@ VERSION: 1.0
 DISCRIPTION: This file provides functionalities for loading and showing the GTMs.
 **********************************************************************************************************/
 
+#include <stdio.h>
 #include "loadGTMfiles.h"
 #include "io_helper.h"
 #include "readGTM.h"
+#include <bits/stdc++.h> 
 
 #include <opencv2/highgui/highgui.hpp>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace cv;
+std::fstream outputFile;
 
 //Show a fraction of the matches
 int showMatches(std::vector <cv::DMatch> matches,
                 std::vector <cv::KeyPoint> keypL,
                 std::vector <cv::KeyPoint> keypR,
                 cv::Mat imgs[2],
-                size_t keepNMatches = 20);
+                size_t keepNMatches = 50);
 
 /* Reads all images and GTMs and shows the matches of each image pair in the given folder
 *
@@ -113,6 +118,17 @@ int showGTM(std::string img_path, std::string l_img_pref, std::string r_img_pref
                          &negativesGTr,
                          &usedMatchTH))
     {
+      // for(int i=0; i<100; i++){
+      //   cout << (keypL[i].pt.x <<", "<< keypL[i].pt.y) << std::endl;
+      // }
+
+      // ofstream MyFile("matched points.txt");      
+      // for( int ii = 0; ii < keypL.size( ); ++ii ){
+      //   MyFile << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+      //   // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
+      // }
+
+
       cout << "Succesfully read GTM file " << filenamesgtm[k] << endl;
       cout << "Inlier ratio in first/left image: " << inlRatioL << endl;
       cout << "Inlier ratio in second/right image: " << inlRatioR << endl;
@@ -121,7 +137,7 @@ int showGTM(std::string img_path, std::string l_img_pref, std::string r_img_pref
       cout << "Number of left negatives (having no corresponding right match): " << negativesGTl << endl;
       cout << "Number of right negatives (having no corresponding left match): " << negativesGTr << endl;
       cout << "Threshold used to generate GTM: " << usedMatchTH << endl << endl;
-      showMatches(matchesGT, keypL, keypR, src, 20);
+      showMatches(matchesGT, keypL, keypR, src, positivesGT);
     }
     else
     {
@@ -149,7 +165,7 @@ int showMatches(std::vector <cv::DMatch> matches,
                 cv::Mat imgs[2],
                 size_t keepNMatches)
 {
-  vector<char> matchesMask(matches.size(), false);;
+  vector<char> matchesMask(matches.size(), false);
   Mat   img_correctMatches;
   float keepXthMatch;
   float oldremainder, newremainder = 0;
@@ -168,6 +184,26 @@ int showMatches(std::vector <cv::DMatch> matches,
     }
     oldremainder = newremainder;
   }
+
+  // Save true positive matches points:
+  unordered_set<int> leftImageMatchedIdx;
+  for(int i=0; i<matches.size(); i++){
+    leftImageMatchedIdx.insert(matches[i].queryIdx);
+  }
+  cout << "leftMatchedSize is: " << leftImageMatchedIdx.size() <<std::endl;
+
+  ofstream LeftTP("Left_TP.txt");
+  ofstream LeftTN("Left_TN.txt");    
+  for( int ii = 0; ii < keypL.size( ); ++ii ){
+    if(leftImageMatchedIdx.find(ii)!=leftImageMatchedIdx.end()){
+      LeftTP << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+    }else{
+      LeftTN << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+    }
+    // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
+  }
+
+
   //Draw true positive matches
   drawMatches(imgs[0],
               keypL,
@@ -181,7 +217,8 @@ int showMatches(std::vector <cv::DMatch> matches,
               cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
   //Show result
-  cvNamedWindow("Ground Truth Matches");
+  // cvNamedWindow("Ground Truth Matches");
+  // cout << "M = " << endl << " "  << img_correctMatches << endl << endl;
   imshow("Ground Truth Matches", img_correctMatches);
   waitKey(0);
   cv::destroyWindow("Ground Truth Matches");
