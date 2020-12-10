@@ -6,5 +6,5 @@ CXX_FLAGS =  -std=c++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/mengxuexu/GTM/include -isystem /usr/include/opencv4 
+CXX_INCLUDES = -I/home/mengxuexu/Documents/GTM/include -isystem /usr/include/opencv4 
 

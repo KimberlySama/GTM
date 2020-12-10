@@ -185,7 +185,7 @@ int showMatches(std::vector <cv::DMatch> matches,
     oldremainder = newremainder;
   }
 
-  // Save true positive matches points:
+  // Save TP points and TN points in left pic:
   unordered_set<int> leftImageMatchedIdx;
   for(int i=0; i<matches.size(); i++){
     leftImageMatchedIdx.insert(matches[i].queryIdx);
@@ -199,6 +199,24 @@ int showMatches(std::vector <cv::DMatch> matches,
       LeftTP << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
     }else{
       LeftTN << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+    }
+    // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
+  }
+  
+    // Save TP points and TN points in left pic:
+  unordered_set<int> rightImageMatchedIdx;
+  for(int i=0; i<matches.size(); i++){
+    rightImageMatchedIdx.insert(matches[i].queryIdx);
+  }
+  cout << "rightMatchedSize is: " << rightImageMatchedIdx.size() <<std::endl;
+
+  ofstream RightTP("Right_TP.txt");
+  ofstream RightTN("Right_TN.txt");    
+  for( int ii = 0; ii < keypR.size( ); ++ii ){
+    if(rightImageMatchedIdx.find(ii)!=rightImageMatchedIdx.end()){
+      RightTP << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
+    }else{
+      RightTN << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
     }
     // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
   }
