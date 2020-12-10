@@ -23,6 +23,8 @@ DISCRIPTION: This file provides functionalities for loading and showing the GTMs
 #include <bits/stdc++.h> 
 
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d.hpp>
+
 #include <iostream>
 #include <fstream>
 
@@ -185,6 +187,9 @@ int showMatches(std::vector <cv::DMatch> matches,
     oldremainder = newremainder;
   }
 
+  int num = matches.size();
+  vector<cv::KeyPoint> matchedPointsLeft(num), matchedPointsRight(num);
+  
   // Save TP points and TN points in left pic:
   unordered_set<int> leftImageMatchedIdx;
   for(int i=0; i<matches.size(); i++){
@@ -197,16 +202,17 @@ int showMatches(std::vector <cv::DMatch> matches,
   for( int ii = 0; ii < keypL.size( ); ++ii ){
     if(leftImageMatchedIdx.find(ii)!=leftImageMatchedIdx.end()){
       LeftTP << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+      matchedPointsLeft.push_back(keypL[ii]);
     }else{
       LeftTN << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
     }
     // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
   }
   
-    // Save TP points and TN points in left pic:
+  // Save TP points and TN points in right pic:
   unordered_set<int> rightImageMatchedIdx;
   for(int i=0; i<matches.size(); i++){
-    rightImageMatchedIdx.insert(matches[i].queryIdx);
+    rightImageMatchedIdx.insert(matches[i].trainIdx);
   }
   cout << "rightMatchedSize is: " << rightImageMatchedIdx.size() <<std::endl;
 
@@ -215,11 +221,19 @@ int showMatches(std::vector <cv::DMatch> matches,
   for( int ii = 0; ii < keypR.size( ); ++ii ){
     if(rightImageMatchedIdx.find(ii)!=rightImageMatchedIdx.end()){
       RightTP << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
+      matchedPointsRight.push_back(keypR[ii]);
     }else{
       RightTN << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
     }
     // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
   }
+
+  vector<Point2f> points1, points2;
+  KeyPoint::convert(matchedPointsLeft, points1);
+  KeyPoint::convert(matchedPointsRight, points1);
+  // find essential matrix:
+  Mat fundamental_matrix = findFundamentalMat(points1, points2, FM_RANSAC, 3, 0.99);
+  cout << "M = "<< endl <<" "<< fundamental_matrix <<endl;
 
 
   //Draw true positive matches
