@@ -192,21 +192,21 @@ int showMatches(std::vector <cv::DMatch> matches,
   int num = matches.size();
   vector<cv::KeyPoint> matchedPointsLeft(num), matchedPointsRight(num);
   
-  ofstream LeftTP("Left_TP.txt");
-  ofstream RightTP("Right_TP.txt"); 
+  ofstream TruePositive("Graffiti_1_6_TP.txt");
+  // ofstream RightTP("Wall_1_2_Right_TP.txt"); 
  
   for(int i=0; i<num; i++){
     int idxForLeft = matches[i].queryIdx;
     KeyPoint left = keypL[idxForLeft];
     matchedPointsLeft.push_back(left);
     // LeftTP << idxForLeft <<" "<< left.pt.x << ", " << left.pt.y <<std::endl;
-    LeftTP << left.pt.x << ", " << left.pt.y <<std::endl;
+    TruePositive << left.pt.x << ", " << left.pt.y << " ";
 
     int idxForRight = matches[i].trainIdx;
     KeyPoint right = keypR[idxForRight];
     matchedPointsRight.push_back(right);
     // RightTP << idxForRight <<" " << right.pt.x << ", " << right.pt.y <<std::endl;
-    RightTP << right.pt.x << ", " << right.pt.y <<std::endl;
+    TruePositive << right.pt.x << ", " << right.pt.y <<std::endl;
   }
 
 
@@ -254,9 +254,9 @@ int showMatches(std::vector <cv::DMatch> matches,
   cout << "points1 size is: " << points1.size() << endl;
   cout << "points2 size is: " << points2.size() << endl;
   Mat fundamental_matrix_1 = findFundamentalMat(points1, points2, FM_8POINT);
-  Mat fundamental_matrix_2 = findFundamentalMat(points2, points1, FM_8POINT);
+  // Mat fundamental_matrix_2 = findFundamentalMat(points2, points1, FM_8POINT);
   cout << "M1 = "<< endl <<" "<< fundamental_matrix_1 <<endl;
-  cout << "M2 = "<< endl <<" "<< fundamental_matrix_2 <<endl;
+  // cout << "M2 = "<< endl <<" "<< fundamental_matrix_2 <<endl;
 
 
   //Draw true positive matches
