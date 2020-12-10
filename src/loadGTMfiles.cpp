@@ -192,7 +192,7 @@ int showMatches(std::vector <cv::DMatch> matches,
   int num = matches.size();
   vector<cv::KeyPoint> matchedPointsLeft(num), matchedPointsRight(num);
   
-  ofstream TruePositive("Graffiti_1_6_TP.txt");
+  ofstream TruePositive("wall_1_6_TP.txt");
   // ofstream RightTP("Wall_1_2_Right_TP.txt"); 
  
   for(int i=0; i<num; i++){
@@ -200,7 +200,7 @@ int showMatches(std::vector <cv::DMatch> matches,
     KeyPoint left = keypL[idxForLeft];
     matchedPointsLeft.push_back(left);
     // LeftTP << idxForLeft <<" "<< left.pt.x << ", " << left.pt.y <<std::endl;
-    TruePositive << left.pt.x << ", " << left.pt.y << " ";
+    TruePositive << left.pt.x << ", " << left.pt.y << ", ";
 
     int idxForRight = matches[i].trainIdx;
     KeyPoint right = keypR[idxForRight];
