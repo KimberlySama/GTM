@@ -27,6 +27,7 @@ DISCRIPTION: This file provides functionalities for loading and showing the GTMs
 
 #include <iostream>
 #include <fstream>
+#include <typeinfo>
 
 using namespace std;
 using namespace cv;
@@ -162,7 +163,7 @@ int showGTM(std::string img_path, std::string l_img_pref, std::string r_img_pref
 * Return value:				 0:		  Everything ok
 */
 int showMatches(std::vector <cv::DMatch> matches,
-                std::vector <cv::KeyPoint> keypL,
+                std::vector <cv::KeyPoint> keypL, 
                 std::vector <cv::KeyPoint> keypR,
                 cv::Mat imgs[2],
                 size_t keepNMatches)
@@ -172,6 +173,7 @@ int showMatches(std::vector <cv::DMatch> matches,
   float keepXthMatch;
   float oldremainder, newremainder = 0;
 
+  // cout << 
   //Reduce number of displayed matches
   keepXthMatch   = 1.0f;
   if(matches.size() > keepNMatches)
@@ -190,50 +192,71 @@ int showMatches(std::vector <cv::DMatch> matches,
   int num = matches.size();
   vector<cv::KeyPoint> matchedPointsLeft(num), matchedPointsRight(num);
   
-  // Save TP points and TN points in left pic:
-  unordered_set<int> leftImageMatchedIdx;
-  for(int i=0; i<matches.size(); i++){
-    leftImageMatchedIdx.insert(matches[i].queryIdx);
-  }
-  cout << "leftMatchedSize is: " << leftImageMatchedIdx.size() <<std::endl;
-
   ofstream LeftTP("Left_TP.txt");
-  ofstream LeftTN("Left_TN.txt");    
-  for( int ii = 0; ii < keypL.size( ); ++ii ){
-    if(leftImageMatchedIdx.find(ii)!=leftImageMatchedIdx.end()){
-      LeftTP << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
-      matchedPointsLeft.push_back(keypL[ii]);
-    }else{
-      LeftTN << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
-    }
-    // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
+  ofstream RightTP("Right_TP.txt"); 
+ 
+  for(int i=0; i<num; i++){
+    int idxForLeft = matches[i].queryIdx;
+    KeyPoint left = keypL[idxForLeft];
+    matchedPointsLeft.push_back(left);
+    // LeftTP << idxForLeft <<" "<< left.pt.x << ", " << left.pt.y <<std::endl;
+    LeftTP << left.pt.x << ", " << left.pt.y <<std::endl;
+
+    int idxForRight = matches[i].trainIdx;
+    KeyPoint right = keypR[idxForRight];
+    matchedPointsRight.push_back(right);
+    // RightTP << idxForRight <<" " << right.pt.x << ", " << right.pt.y <<std::endl;
+    RightTP << right.pt.x << ", " << right.pt.y <<std::endl;
   }
+
+
+  // Save TP points and TN points in left pic:
+  // unordered_set<int> leftImageMatchedIdx;
+  // for(int i=0; i<matches.size(); i++){
+  //   leftImageMatchedIdx.insert(matches[i].queryIdx);
+  // }
+  cout << "leftMatchedSize is: " << matchedPointsLeft.size() <<std::endl;
+
+  // ofstream LeftTP("Left_TP.txt");
+  // ofstream LeftTN("Left_TN.txt");    
+  // for( int ii = 0; ii < keypL.size( ); ++ii ){
+  //   if(leftImageMatchedIdx.find(ii)!=leftImageMatchedIdx.end()){
+  //     LeftTP << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+  //     matchedPointsLeft.push_back(keypL[ii]);
+  //   }else{
+  //     LeftTN << keypL[ii].pt.x << ", " << keypL[ii].pt.y <<std::endl;
+  //   }
+  //   // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
+  // }
   
   // Save TP points and TN points in right pic:
-  unordered_set<int> rightImageMatchedIdx;
-  for(int i=0; i<matches.size(); i++){
-    rightImageMatchedIdx.insert(matches[i].trainIdx);
-  }
-  cout << "rightMatchedSize is: " << rightImageMatchedIdx.size() <<std::endl;
+  // unordered_set<int> rightImageMatchedIdx;
+  // for(int i=0; i<matches.size(); i++){
+  //   rightImageMatchedIdx.insert(matches[i].trainIdx);
+  // }
+  cout << "rightMatchedSize is: " << matchedPointsRight.size() <<std::endl;
 
-  ofstream RightTP("Right_TP.txt");
-  ofstream RightTN("Right_TN.txt");    
-  for( int ii = 0; ii < keypR.size( ); ++ii ){
-    if(rightImageMatchedIdx.find(ii)!=rightImageMatchedIdx.end()){
-      RightTP << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
-      matchedPointsRight.push_back(keypR[ii]);
-    }else{
-      RightTN << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
-    }
-    // cout << "("<< keypL[ii].pt.x << ", "<< keypL[ii].pt.y << ")" << std::endl;
-  }
+  // ofstream RightTP("Right_TP.txt");
+  // ofstream RightTN("Right_TN.txt");    
+  // for( int ii = 0; ii < keypR.size( ); ++ii ){
+  //   if(rightImageMatchedIdx.find(ii)!=rightImageMatchedIdx.end()){
+  //     RightTP << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
+  //     matchedPointsRight.push_back(keypR[ii]);
+  //   }else{
+  //     RightTN << keypR[ii].pt.x << ", " << keypR[ii].pt.y <<std::endl;
+  //   }
+  // }
 
   vector<Point2f> points1, points2;
   KeyPoint::convert(matchedPointsLeft, points1);
-  KeyPoint::convert(matchedPointsRight, points1);
+  KeyPoint::convert(matchedPointsRight, points2);
   // find essential matrix:
-  Mat fundamental_matrix = findFundamentalMat(points1, points2, FM_RANSAC, 3, 0.99);
-  cout << "M = "<< endl <<" "<< fundamental_matrix <<endl;
+  cout << "points1 size is: " << points1.size() << endl;
+  cout << "points2 size is: " << points2.size() << endl;
+  Mat fundamental_matrix_1 = findFundamentalMat(points1, points2, FM_8POINT);
+  Mat fundamental_matrix_2 = findFundamentalMat(points2, points1, FM_8POINT);
+  cout << "M1 = "<< endl <<" "<< fundamental_matrix_1 <<endl;
+  cout << "M2 = "<< endl <<" "<< fundamental_matrix_2 <<endl;
 
 
   //Draw true positive matches
